@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow Report</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <form id="myForm">
+        <input type="number" id="input1" name="input1" placeholder="KCH Outflow Prev Day">
+        <input type="number" id="input2" name="input2" placeholder="KCH Outflow Curr Day">
+        <input type="number" id="input3" name="input3" placeholder="EC Inflow Prev Day">
+        <input type="number" id="input4" name="input4" placeholder="EC Inflow Curr Day">
+        <input type="number" id="input5" name="input5" placeholder="EC Outflow Prev Day">
+        <input type="number" id="input6" name="input6" placeholder="EC Outflow Curr Day">
+        <input type="number" id="input7" name="input7" placeholder="Prev Day Tank Level">
+        <input type="number" id="input8" name="input8" placeholder="Curr Day Tank Level">
+
+        <!-- <button onclick="generateReport()">Generate</button> -->
+        <button type="button" onclick="submitForm()">Generate</button>
+        <button type="button" onclick="resetInputs()">Reset</button>
+        <button type="button" onclick="copyToClipboard()">Copy</button>
+    </form>
+
+    <p id="displayParagraph"></p>
+
+    <script>
+
+        function generateReport() {
+            var input1 = document.getElementById("input1").value;
+            var input2 = document.getElementById("input2").value;
+            var input3 = document.getElementById("input3").value;
+            var input4 = document.getElementById("input4").value;
+            var input5 = document.getElementById("input5").value;
+            var input6 = document.getElementById("input6").value;
+            var input7 = document.getElementById("input7").value;
+            var input8 = document.getElementById("input8").value;
+
+            var date = new Date();
+            var yesterday = new Date(date);
+            yesterday.setDate(date.getDate() - 1);
+            var formattedDate = ('0' + yesterday.getDate()).slice(-2) + '/' + ('0' + (yesterday.getMonth() + 1)).slice(-2) + '/' + yesterday.getFullYear();
+
+            var today = new Date();
+            var formattedToday = ('0' + today.getDate()).slice(-2) + '/' + ('0' + (today.getMonth() + 1)).slice(-2) + '/' + today.getFullYear();
+
+            var kchOutflow = "KCH outflow to EC <br>" + formattedDate + " : " + input1 + "<br>" +
+                formattedToday + " : " + input2 + "<br>Total MLD    : " + (input2 - input1) / 1000;
+
+            var ecInflow = "Electronic City Inflow <br>" + formattedDate + " : " + input3 + "<br>" +
+                formattedToday + " : " + input4 + "<br>Total MLD    : " + (input4 - input3) / 1000;
+
+            var ecOutflow = "Electronic City Outflow <br>" + formattedDate + " : " + input5 + "<br>" +
+                formattedToday + " : " + input6 + "<br>Total MLD    : " + (input6 - input5) / 1000;
+
+            var tankLevelPrevMld = input7 * 1.2
+            var tankLevelCurrMld = input8 * 1.2
+            var tankLevelDiffMld = tankLevelCurrMld - tankLevelPrevMld
+            var tankLevelIncreased = (tankLevelDiffMld >= 0) ? "Increase" : "Decrease"
+            var tankLevel = "Previous day tank level: <br>" +
+                input7 + "m (" + input7 + " * 1.2 = " + tankLevelPrevMld +
+                ")<br>Present day tank level: <br>" +
+                input8 + "m (" + input8 + " * 1.2 = " + tankLevelCurrMld +
+                ")<br>" + tankLevelIncreased + " in tank level: <br>" +
+                tankLevelCurrMld + " - " + tankLevelPrevMld + " = " + (tankLevelDiffMld) + " MLD";
+
+            var report = "Electronic City<br><br>" + kchOutflow + "<br><br>" + ecInflow + "<br><br>" + ecOutflow + "<br><br>" + tankLevel;
+
+            document.getElementById("displayParagraph").innerHTML = report;
+        }
+
+        function resetInputs() {
+            for (var i = 1; i <= 8; i++) {
+                document.getElementById("input" + i).value = "";
+            }
+            document.getElementById("displayParagraph").innerHTML = "";
+        }
+
+        function copyToClipboard() {
+            var textToCopy = document.getElementById("displayParagraph").innerText;
+
+            // Attempt using navigator.clipboard.writeText method
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textToCopy)
+                    .then(function () {
+                        alert("Text copied to clipboard");
+                    })
+                    .catch(function (error) {
+                        console.error("Unable to copy text: ", error);
+                        // Fallback to execCommand for older browsers or if clipboard API fails
+                        fallbackCopyTextToClipboard(textToCopy);
+                    });
+            } else {
+                // Fallback to execCommand for older browsers
+                fallbackCopyTextToClipboard(textToCopy);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+            alert("Text copied to clipboard");
+        }
+
+        function submitForm() {
+            // Get form data
+            var formData = new FormData(document.getElementById("myForm"));
+
+            // Perform asynchronous form submission using Fetch API
+            fetch('/submit_kch', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    // Handle success response
+                    var displayParagraph = document.getElementById("displayParagraph");
+                    displayParagraph.innerHTML = data.replace(/\n/g, '<br>')
+                    console.log(data);
+                })
+                .catch(error => {
+                    // Handle error
+                    console.error('There was a problem with the fetch operation:', error);
+                });
+        }
+
+    </script>
+
+</body>
+
+</html>

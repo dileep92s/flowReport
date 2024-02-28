@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow Report</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <form id="myForm">
+        <!-- Main Flow at KCH GLR -->
+        <input type="number" id="mainPrev" name="mainPrev" placeholder="Prev Day Main Flow at KCH GLR">
+        <input type="number" id="mainCurr" name="mainCurr" placeholder="Curr Day Main Flow at KCH GLR">
+        <!-- Inlet to KCH GLR Tank -->
+        <input type="number" id="kchPrev" name="kchPrev" placeholder="Prev Day Inlet to KCH GLR Tank">
+        <input type="number" id="kchCurr" name="kchCurr" placeholder="Curr Day Inlet to KCH GLR Tank">
+        <!-- Electronic City Reading  -->
+        <input type="number" id="ecPrev" name="ecPrev" placeholder="Prev Day Electronic City Reading">
+        <input type="number" id="ecCurr" name="ecCurr" placeholder="Curr Day Electronic City Reading">
+        <!-- Vijaya Bank Reading  -->
+        <input type="number" id="vblPrev" name="vblPrev" placeholder="Prev Day Vijaya Bank Reading">
+        <input type="number" id="vblCurr" name="vblCurr" placeholder="Curr Day Vijaya Bank Reading">
+        <!-- Tank Level -->
+        <input type="number" id="tankPrev" name="tankPrev" placeholder="Prev Day Tank Level">
+        <input type="number" id="tankCurr" name="tankCurr" placeholder="Curr Day Tank Level">
+        <!-- DLF Road Reading  -->
+        <input type="number" id="dlfPrev" name="dlfPrev" placeholder="Prev Day DLF Road Reading">
+        <input type="number" id="dlfCurr" name="dlfCurr" placeholder="Curr Day DLF Road Reading">
+
+        <button type="button" onclick="submitForm()">Generate</button>
+        <button type="button" onclick="resetInputs()">Reset</button>
+        <button type="button" onclick="copyToClipboard()">Copy</button>
+    </form>
+
+    <p id="displayParagraph"></p>
+
+    <script>
+
+        function resetInputs() {
+            var form = document.getElementById("myForm");
+            var inputElements = form.querySelectorAll("input")
+            inputElements.forEach(function (input) {
+                input.value = "";
+            });
+
+            document.getElementById("displayParagraph").innerHTML = "";
+        }
+
+        function copyToClipboard() {
+            var textToCopy = document.getElementById("displayParagraph").innerText;
+
+            // Attempt using navigator.clipboard.writeText method
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textToCopy)
+                    .then(function () {
+                        alert("Text copied to clipboard");
+                    })
+                    .catch(function (error) {
+                        console.error("Unable to copy text: ", error);
+                        // Fallback to execCommand for older browsers or if clipboard API fails
+                        fallbackCopyTextToClipboard(textToCopy);
+                    });
+            } else {
+                // Fallback to execCommand for older browsers
+                fallbackCopyTextToClipboard(textToCopy);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+            alert("Text copied to clipboard");
+        }
+
+        function submitForm() {
+            // Get form data
+            var formData = new FormData(document.getElementById("myForm"));
+
+            // Perform asynchronous form submission using Fetch API
+            fetch('/submit_two', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    // Handle success response
+                    var displayParagraph = document.getElementById("displayParagraph");
+                    displayParagraph.innerHTML = data.replace(/\n/g, '<br>')
+                    console.log(data);
+                })
+                .catch(error => {
+                    // Handle error
+                    console.error('There was a problem with the fetch operation:', error);
+                });
+        }
+
+    </script>
+
+</body>
+
+</html>
