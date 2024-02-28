@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy
 
@@ -8,7 +8,7 @@ db = SQLAlchemy(app)
 
 
 class ReportOne(db.Model):
-    date = db.Column(db.Date, primary_key=True)
+    date = db.Column(db.Integer, primary_key=True)
     kchPrev = db.Column(db.Float)
     kchCurr = db.Column(db.Float)
     ecInPrev = db.Column(db.Float)
@@ -20,7 +20,7 @@ class ReportOne(db.Model):
 
 
 class ReportTwo(db.Model):
-    date = db.Column(db.Date, primary_key=True)
+    date = db.Column(db.Integer, primary_key=True)
     mainPrev = db.Column(db.Float)
     mainCurr = db.Column(db.Float)
     kchPrev = db.Column(db.Float)
@@ -42,6 +42,11 @@ def index():
 
 @app.route("/report_kch")
 def report_kch():
+    reportKey = int(datetime.today().strftime("%d%m%Y"))
+    row = db.session.execute(db.select(ReportOne).filter_by(date=reportKey)).scalar_one()
+    print(row)
+    if row:
+        print(row.date, row.kchCurr, row.ecInCurr, row.ecOutCurr, row.tankCurr)
     return render_template("report_kch.html")
 
 
@@ -79,8 +84,9 @@ def submit_kch():
 
     report = f"Electronic City<br><br>{kchOutflow}<br><br>{ecInflow}<br><br>{ecOutflow}<br><br>{tankLevel}"
 
+    reportKey = int(dateToday.strftime("%d%m%Y"))
     reportOne = ReportOne(
-        date=dateToday,
+        date=reportKey,
         kchPrev=kchPrev,
         kchCurr=kchCurr,
         ecInPrev=ecInPrev,
@@ -153,8 +159,9 @@ def submit_two():
 
     report = f"{mainFlow}<br><br>{inletKCH}<br><br>{ecReading}<br><br>{vblReading}<br><br>{tankLevel}<br><br>{kchflow}<br><br>{dlfReading}"
 
+    reportKey = int(dateToday.strftime("%d%m%Y"))
     reportTwo = ReportTwo(
-        date=dateToday,
+        date=reportKey,
         mainPrev=mainPrev,
         mainCurr=mainCurr,
         kchPrev=kchPrev,
@@ -177,4 +184,4 @@ def submit_two():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(debug=False)
+    app.run(debug=True)

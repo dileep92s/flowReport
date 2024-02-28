@@ -74,9 +74,12 @@
         }
 
         function resetInputs() {
-            for (var i = 1; i <= 8; i++) {
-                document.getElementById("input" + i).value = "";
-            }
+            var form = document.getElementById("myForm");
+            var inputElements = form.querySelectorAll("input")
+            inputElements.forEach(function (input) {
+                input.value = "";
+            });
+
             document.getElementById("displayParagraph").innerHTML = "";
         }
 
