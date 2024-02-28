@@ -11,14 +11,14 @@
 <body>
 
     <form id="myForm">
-        <input type="number" id="input1" name="input1" placeholder="KCH Outflow Prev Day">
-        <input type="number" id="input2" name="input2" placeholder="KCH Outflow Curr Day">
-        <input type="number" id="input3" name="input3" placeholder="EC Inflow Prev Day">
-        <input type="number" id="input4" name="input4" placeholder="EC Inflow Curr Day">
-        <input type="number" id="input5" name="input5" placeholder="EC Outflow Prev Day">
-        <input type="number" id="input6" name="input6" placeholder="EC Outflow Curr Day">
-        <input type="number" id="input7" name="input7" placeholder="Prev Day Tank Level">
-        <input type="number" id="input8" name="input8" placeholder="Curr Day Tank Level">
+        <input type="number" id="kchPrev" name="kchPrev" placeholder="KCH Outflow Prev Day">
+        <input type="number" id="kchCurr" name="kchCurr" placeholder="KCH Outflow Curr Day">
+        <input type="number" id="ecInPrev" name="ecInPrev" placeholder="EC Inflow Prev Day">
+        <input type="number" id="ecInCurr" name="ecInCurr" placeholder="EC Inflow Curr Day">
+        <input type="number" id="ecOutPrev" name="ecOutPrev" placeholder="EC Outflow Prev Day">
+        <input type="number" id="ecOutCurr" name="ecOutCurr" placeholder="EC Outflow Curr Day">
+        <input type="number" id="tankPrev" name="tankPrev" placeholder="Prev Day Tank Level">
+        <input type="number" id="tankCurr" name="tankCurr" placeholder="Curr Day Tank Level">
 
         <!-- <button onclick="generateReport()">Generate</button> -->
         <button type="button" onclick="submitForm()">Generate</button>
@@ -31,14 +31,14 @@
     <script>
 
         function generateReport() {
-            var input1 = document.getElementById("input1").value;
-            var input2 = document.getElementById("input2").value;
-            var input3 = document.getElementById("input3").value;
-            var input4 = document.getElementById("input4").value;
-            var input5 = document.getElementById("input5").value;
-            var input6 = document.getElementById("input6").value;
-            var input7 = document.getElementById("input7").value;
-            var input8 = document.getElementById("input8").value;
+            var kchPrev = document.getElementById("kchPrev").value;
+            var kchCurr = document.getElementById("kchCurr").value;
+            var ecInPrev = document.getElementById("ecInPrev").value;
+            var ecInCurr = document.getElementById("ecInCurr").value;
+            var ecOutPrev = document.getElementById("ecOutPrev").value;
+            var ecOutCurr = document.getElementById("ecOutCurr").value;
+            var tankPrev = document.getElementById("tankPrev").value;
+            var tankCurr = document.getElementById("tankCurr").value;
 
             var date = new Date();
             var yesterday = new Date(date);
@@ -48,23 +48,23 @@
             var today = new Date();
             var formattedToday = ('0' + today.getDate()).slice(-2) + '/' + ('0' + (today.getMonth() + 1)).slice(-2) + '/' + today.getFullYear();
 
-            var kchOutflow = "KCH outflow to EC <br>" + formattedDate + " : " + input1 + "<br>" +
-                formattedToday + " : " + input2 + "<br>Total MLD    : " + (input2 - input1) / 1000;
+            var kchOutflow = "KCH outflow to EC <br>" + formattedDate + " : " + kchPrev + "<br>" +
+                formattedToday + " : " + kchCurr + "<br>Total MLD    : " + (kchCurr - kchPrev) / 1000;
 
-            var ecInflow = "Electronic City Inflow <br>" + formattedDate + " : " + input3 + "<br>" +
-                formattedToday + " : " + input4 + "<br>Total MLD    : " + (input4 - input3) / 1000;
+            var ecInflow = "Electronic City Inflow <br>" + formattedDate + " : " + ecInPrev + "<br>" +
+                formattedToday + " : " + ecInCurr + "<br>Total MLD    : " + (ecInCurr - ecInPrev) / 1000;
 
-            var ecOutflow = "Electronic City Outflow <br>" + formattedDate + " : " + input5 + "<br>" +
-                formattedToday + " : " + input6 + "<br>Total MLD    : " + (input6 - input5) / 1000;
+            var ecOutflow = "Electronic City Outflow <br>" + formattedDate + " : " + ecOutPrev + "<br>" +
+                formattedToday + " : " + ecOutCurr + "<br>Total MLD    : " + (ecOutCurr - ecOutPrev) / 1000;
 
-            var tankLevelPrevMld = input7 * 1.2
-            var tankLevelCurrMld = input8 * 1.2
+            var tankLevelPrevMld = tankPrev * 1.2
+            var tankLevelCurrMld = tankCurr * 1.2
             var tankLevelDiffMld = tankLevelCurrMld - tankLevelPrevMld
             var tankLevelIncreased = (tankLevelDiffMld >= 0) ? "Increase" : "Decrease"
             var tankLevel = "Previous day tank level: <br>" +
-                input7 + "m (" + input7 + " * 1.2 = " + tankLevelPrevMld +
+                tankPrev + "m (" + tankPrev + " * 1.2 = " + tankLevelPrevMld +
                 ")<br>Present day tank level: <br>" +
-                input8 + "m (" + input8 + " * 1.2 = " + tankLevelCurrMld +
+                tankCurr + "m (" + tankCurr + " * 1.2 = " + tankLevelCurrMld +
                 ")<br>" + tankLevelIncreased + " in tank level: <br>" +
                 tankLevelCurrMld + " - " + tankLevelPrevMld + " = " + (tankLevelDiffMld) + " MLD";
 

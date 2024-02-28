@@ -1,7 +1,38 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request
 from datetime import datetime, timedelta
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///example.db"
+db = SQLAlchemy(app)
+
+
+class ReportOne(db.Model):
+    date = db.Column(db.Date, primary_key=True)
+    kchPrev = db.Column(db.Float)
+    kchCurr = db.Column(db.Float)
+    ecInPrev = db.Column(db.Float)
+    ecInCurr = db.Column(db.Float)
+    ecOutPrev = db.Column(db.Float)
+    ecOutCurr = db.Column(db.Float)
+    tankPrev = db.Column(db.Float)
+    tankCurr = db.Column(db.Float)
+
+
+class ReportTwo(db.Model):
+    date = db.Column(db.Date, primary_key=True)
+    mainPrev = db.Column(db.Float)
+    mainCurr = db.Column(db.Float)
+    kchPrev = db.Column(db.Float)
+    kchCurr = db.Column(db.Float)
+    ecPrev = db.Column(db.Float)
+    ecCurr = db.Column(db.Float)
+    tankPrev = db.Column(db.Float)
+    tankCurr = db.Column(db.Float)
+    dlfPrev = db.Column(db.Float)
+    dlfCurr = db.Column(db.Float)
+    vblPrev = db.Column(db.Float)
+    vblCurr = db.Column(db.Float)
 
 
 @app.route("/")
@@ -17,14 +48,14 @@ def report_kch():
 @app.route("/submit_kch", methods=["POST"])
 def submit_kch():
 
-    input1 = float(request.form["input1"]) if request.form["input1"] else 0
-    input2 = float(request.form["input2"]) if request.form["input2"] else 0
-    input3 = float(request.form["input3"]) if request.form["input3"] else 0
-    input4 = float(request.form["input4"]) if request.form["input4"] else 0
-    input5 = float(request.form["input5"]) if request.form["input5"] else 0
-    input6 = float(request.form["input6"]) if request.form["input6"] else 0
-    input7 = float(request.form["input7"]) if request.form["input7"] else 0
-    input8 = float(request.form["input8"]) if request.form["input8"] else 0
+    kchPrev = float(request.form["kchPrev"]) if request.form["kchPrev"] else 0
+    kchCurr = float(request.form["kchCurr"]) if request.form["kchCurr"] else 0
+    ecInPrev = float(request.form["ecInPrev"]) if request.form["ecInPrev"] else 0
+    ecInCurr = float(request.form["ecInCurr"]) if request.form["ecInCurr"] else 0
+    ecOutPrev = float(request.form["ecOutPrev"]) if request.form["ecOutPrev"] else 0
+    ecOutCurr = float(request.form["ecOutCurr"]) if request.form["ecOutCurr"] else 0
+    tankPrev = float(request.form["tankPrev"]) if request.form["tankPrev"] else 0
+    tankCurr = float(request.form["tankCurr"]) if request.form["tankCurr"] else 0
 
     dateToday = datetime.today()
     formattedToday = dateToday.strftime("%d/%m/%Y")
@@ -32,21 +63,35 @@ def submit_kch():
     dateYesterday = dateToday - timedelta(days=1)
     formattedYesterday = dateYesterday.strftime("%d/%m/%Y")
 
-    totalMLD = (input2 - input1) / 1000
-    kchOutflow = f"KCH outflow to EC <br>{formattedYesterday} : {input1}<br>{formattedToday} : {input2}<br>Total MLD    : {totalMLD:.3f}"
-    totalMLD = (input4 - input3) / 1000
-    ecInflow = f"Electronic City Inflow <br>{formattedYesterday} : {input3}<br>{formattedToday} : {input4}<br>Total MLD    : {totalMLD:.3f}"
-    totalMLD = (input6 - input5) / 1000
-    ecOutflow = f"Electronic City Outflow <br>{formattedYesterday} : {input5}<br>{formattedToday} : {input6}<br>Total MLD    : {totalMLD:.3f}"
+    totalMLD = (kchCurr - kchPrev) / 1000
+    kchOutflow = f"KCH outflow to EC <br>{formattedYesterday} : {kchPrev}<br>{formattedToday} : {kchCurr}<br>Total MLD    : {totalMLD:.3f}"
+    totalMLD = (ecInCurr - ecInPrev) / 1000
+    ecInflow = f"Electronic City Inflow <br>{formattedYesterday} : {ecInPrev}<br>{formattedToday} : {ecInCurr}<br>Total MLD    : {totalMLD:.3f}"
+    totalMLD = (ecOutCurr - ecOutPrev) / 1000
+    ecOutflow = f"Electronic City Outflow <br>{formattedYesterday} : {ecOutPrev}<br>{formattedToday} : {ecOutCurr}<br>Total MLD    : {totalMLD:.3f}"
 
     multiplier = 1.2
-    tankLevelPrevMld = input7 * multiplier
-    tankLevelCurrMld = input8 * multiplier
+    tankLevelPrevMld = tankPrev * multiplier
+    tankLevelCurrMld = tankCurr * multiplier
     tankLevelDiffMld = tankLevelCurrMld - tankLevelPrevMld
     tankLevelIncreased = "Increase" if (tankLevelDiffMld >= 0) else "Decrease"
-    tankLevel = f"Previous day tank level: <br>{input7}m   ({input7} * {multiplier} = {tankLevelPrevMld:.3f})<br>Present day tank level: <br>{input8}m   ({input8} * {multiplier} = {tankLevelCurrMld:.3f})<br>{tankLevelIncreased} in tank level: <br>{tankLevelCurrMld:.3f} - {tankLevelPrevMld:.3f} = {tankLevelDiffMld:.3f} MLD"
+    tankLevel = f"Previous day tank level: <br>{tankPrev}m   ({tankPrev} * {multiplier} = {tankLevelPrevMld:.3f})<br>Present day tank level: <br>{tankCurr}m   ({tankCurr} * {multiplier} = {tankLevelCurrMld:.3f})<br>{tankLevelIncreased} in tank level: <br>{tankLevelCurrMld:.3f} - {tankLevelPrevMld:.3f} = {tankLevelDiffMld:.3f} MLD"
 
     report = f"Electronic City<br><br>{kchOutflow}<br><br>{ecInflow}<br><br>{ecOutflow}<br><br>{tankLevel}"
+
+    reportOne = ReportOne(
+        date=dateToday,
+        kchPrev=kchPrev,
+        kchCurr=kchCurr,
+        ecInPrev=ecInPrev,
+        ecInCurr=ecInCurr,
+        ecOutPrev=ecOutPrev,
+        ecOutCurr=ecOutCurr,
+        tankPrev=tankPrev,
+        tankCurr=tankCurr,
+    )
+    db.session.merge(reportOne)
+    db.session.commit()
 
     return report
 
@@ -59,9 +104,9 @@ def report_two():
 @app.route("/submit_two", methods=["POST"])
 def submit_two():
 
-    main_prev = float(request.form["mainPrev"]) if request.form["mainPrev"] else 0
-    main_curr = float(request.form["mainCurr"]) if request.form["mainCurr"] else 0
-    kch_prev = float(request.form["kchPrev"]) if request.form["kchPrev"] else 0
+    mainPrev = float(request.form["mainPrev"]) if request.form["mainPrev"] else 0
+    mainCurr = float(request.form["mainCurr"]) if request.form["mainCurr"] else 0
+    kchPrev = float(request.form["kchPrev"]) if request.form["kchPrev"] else 0
     kchCurr = float(request.form["kchCurr"]) if request.form["kchCurr"] else 0
     ecPrev = float(request.form["ecPrev"]) if request.form["ecPrev"] else 0
     ecCurr = float(request.form["ecCurr"]) if request.form["ecCurr"] else 0
@@ -78,11 +123,11 @@ def submit_two():
     dateYesterday = dateToday - timedelta(days=1)
     formattedYesterday = dateYesterday.strftime("%d/%m/%Y")
 
-    mainTotalMLD = (main_curr - main_prev) / 1000
-    mainFlow = f"Main Flow at KCH GLR <br>{formattedYesterday} : {main_prev}<br>{formattedToday} : {main_curr}<br>Total MLD    : {mainTotalMLD:.3f}"
+    mainTotalMLD = (mainCurr - mainPrev) / 1000
+    mainFlow = f"Main Flow at KCH GLR <br>{formattedYesterday} : {mainPrev}<br>{formattedToday} : {mainCurr}<br>Total MLD    : {mainTotalMLD:.3f}"
 
-    kchTotalMLD = (kchCurr - kch_prev) / 1000
-    inletKCH = f"Inlet to KCH GLR Tank <br>{formattedYesterday} : {kch_prev}<br>{formattedToday} : {kchCurr}<br>Total MLD    : {kchTotalMLD:.3f}"
+    kchTotalMLD = (kchCurr - kchPrev) / 1000
+    inletKCH = f"Inlet to KCH GLR Tank <br>{formattedYesterday} : {kchPrev}<br>{formattedToday} : {kchCurr}<br>Total MLD    : {kchTotalMLD:.3f}"
 
     ecTotalMLD = (ecCurr - ecPrev) / 1000
     ecReading = f"Electronic City Reading  <br>{formattedYesterday} : {ecPrev}<br>{formattedToday} : {ecCurr}<br>Total MLD    : {ecTotalMLD:.3f}"
@@ -108,8 +153,28 @@ def submit_two():
 
     report = f"{mainFlow}<br><br>{inletKCH}<br><br>{ecReading}<br><br>{vblReading}<br><br>{tankLevel}<br><br>{kchflow}<br><br>{dlfReading}"
 
+    reportTwo = ReportTwo(
+        date=dateToday,
+        mainPrev=mainPrev,
+        mainCurr=mainCurr,
+        kchPrev=kchPrev,
+        kchCurr=kchCurr,
+        ecPrev=ecPrev,
+        ecCurr=ecCurr,
+        tankPrev=tankPrev,
+        tankCurr=tankCurr,
+        dlfPrev=dlfPrev,
+        dlfCurr=dlfCurr,
+        vblPrev=vblPrev,
+        vblCurr=vblCurr,
+    )
+    db.session.merge(reportTwo)
+    db.session.commit()
+
     return report
 
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=False)
