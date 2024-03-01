@@ -10,47 +10,75 @@
 
 <body>
 
-    <form id="myForm">
+    <form id="flowData">
         <!-- Main Flow at KCH GLR -->
-        <input type="number" id="mainPrev" name="mainPrev" placeholder="Prev Day Main Flow at KCH GLR">
-        <input type="number" id="mainCurr" name="mainCurr" placeholder="Curr Day Main Flow at KCH GLR">
+        <label for="mainPrev">Prev Day Main Flow at KCH GLR:</label>
+        <input type="number" id="mainPrev" name="mainPrev" value="{{ dataPrev[0] }}">
+
+        <label for="mainCurr">Curr Day Main Flow at KCH GLR:</label>
+        <input type="number" id="mainCurr" name="mainCurr" value="{{ dataPrev[1] }}">
+
         <!-- Inlet to KCH GLR Tank -->
-        <input type="number" id="kchPrev" name="kchPrev" placeholder="Prev Day Inlet to KCH GLR Tank">
-        <input type="number" id="kchCurr" name="kchCurr" placeholder="Curr Day Inlet to KCH GLR Tank">
-        <!-- Electronic City Reading  -->
-        <input type="number" id="ecPrev" name="ecPrev" placeholder="Prev Day Electronic City Reading">
-        <input type="number" id="ecCurr" name="ecCurr" placeholder="Curr Day Electronic City Reading">
-        <!-- Vijaya Bank Reading  -->
-        <input type="number" id="vblPrev" name="vblPrev" placeholder="Prev Day Vijaya Bank Reading">
-        <input type="number" id="vblCurr" name="vblCurr" placeholder="Curr Day Vijaya Bank Reading">
+        <label for="kchPrev">Prev Day Inlet to KCH GLR Tank:</label>
+        <input type="number" id="kchPrev" name="kchPrev" value="{{ dataPrev[2] }}">
+
+        <label for="kchCurr">Curr Day Inlet to KCH GLR Tank:</label>
+        <input type="number" id="kchCurr" name="kchCurr" value="{{ dataPrev[3] }}">
+
+        <!-- Electronic City Reading -->
+        <label for="ecPrev">Prev Day Electronic City Reading:</label>
+        <input type="number" id="ecPrev" name="ecPrev" value="{{ dataPrev[4] }}">
+
+        <label for="ecCurr">Curr Day Electronic City Reading:</label>
+        <input type="number" id="ecCurr" name="ecCurr" value="{{ dataPrev[5] }}">
+
+        <!-- Vijaya Bank Reading -->
+        <label for="vblPrev">Prev Day Vijaya Bank Reading:</label>
+        <input type="number" id="vblPrev" name="vblPrev" value="{{ dataPrev[6] }}">
+
+        <label for="vblCurr">Curr Day Vijaya Bank Reading:</label>
+        <input type="number" id="vblCurr" name="vblCurr" value="{{ dataPrev[7] }}">
+
         <!-- Tank Level -->
-        <input type="number" id="tankPrev" name="tankPrev" placeholder="Prev Day Tank Level">
-        <input type="number" id="tankCurr" name="tankCurr" placeholder="Curr Day Tank Level">
-        <!-- DLF Road Reading  -->
-        <input type="number" id="dlfPrev" name="dlfPrev" placeholder="Prev Day DLF Road Reading">
-        <input type="number" id="dlfCurr" name="dlfCurr" placeholder="Curr Day DLF Road Reading">
+        <label for="tankPrev">Prev Day Tank Level:</label>
+        <input type="number" id="tankPrev" name="tankPrev" value="{{ dataPrev[8] }}">
+
+        <label for="tankCurr">Curr Day Tank Level:</label>
+        <input type="number" id="tankCurr" name="tankCurr" value="{{ dataPrev[9] }}">
+
+        <!-- DLF Road Reading -->
+        <label for="dlfPrev">Prev Day DLF Road Reading:</label>
+        <input type="number" id="dlfPrev" name="dlfPrev" value="{{ dataPrev[10] }}">
+
+        <label for="dlfCurr">Curr Day DLF Road Reading:</label>
+        <input type="number" id="dlfCurr" name="dlfCurr" value="{{ dataPrev[11] }}">
 
         <button type="button" onclick="submitForm()">Generate</button>
         <button type="button" onclick="resetInputs()">Reset</button>
         <button type="button" onclick="copyToClipboard()">Copy</button>
+        <button type="button" onclick="exportExcel()">Export</button>
     </form>
 
-    <p id="displayParagraph"></p>
+    <p id="flowReport"></p>
 
     <script>
 
+        function exportExcel() {
+            window.location.href = "{{ url_for('export_two') }}";
+        }
+
         function resetInputs() {
-            var form = document.getElementById("myForm");
+            var form = document.getElementById("flowData");
             var inputElements = form.querySelectorAll("input")
             inputElements.forEach(function (input) {
                 input.value = "";
             });
 
-            document.getElementById("displayParagraph").innerHTML = "";
+            document.getElementById("flowReport").innerHTML = "";
         }
 
         function copyToClipboard() {
-            var textToCopy = document.getElementById("displayParagraph").innerText;
+            var textToCopy = document.getElementById("flowReport").innerText;
 
             // Attempt using navigator.clipboard.writeText method
             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -81,7 +109,7 @@
 
         function submitForm() {
             // Get form data
-            var formData = new FormData(document.getElementById("myForm"));
+            var formData = new FormData(document.getElementById("flowData"));
 
             // Perform asynchronous form submission using Fetch API
             fetch('/submit_two', {
@@ -96,8 +124,8 @@
                 })
                 .then(data => {
                     // Handle success response
-                    var displayParagraph = document.getElementById("displayParagraph");
-                    displayParagraph.innerHTML = data.replace(/\n/g, '<br>')
+                    var flowReport = document.getElementById("flowReport");
+                    flowReport.innerHTML = data.replace(/\n/g, '<br>')
                     console.log(data);
                 })
                 .catch(error => {
