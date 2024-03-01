@@ -41,9 +41,9 @@ class ReportTwo(db.Model):
     mainCurr = db.Column(db.Float)
     kchCurr = db.Column(db.Float)
     ecCurr = db.Column(db.Float)
+    vblCurr = db.Column(db.Float)
     tankCurr = db.Column(db.Float)
     dlfCurr = db.Column(db.Float)
-    vblCurr = db.Column(db.Float)
 
 
 @app.route("/")
@@ -160,36 +160,36 @@ def report_two():
     dataYesterday = ReportTwo.query.filter_by(dateCurr=dateYesterday()).first()
     if dataYesterday:
         dataToday = ReportTwo.query.filter_by(dateCurr=dateToday()).first()
-        dataPrev = (
-            dataYesterday.mainCurr,
-            dataToday.mainCurr,
-            dataYesterday.kchCurr,
-            dataToday.kchCurr,
-            dataYesterday.ecCurr,
-            dataToday.ecCurr,
-            dataYesterday.tankCurr,
-            dataToday.tankCurr,
-            dataYesterday.dlfCurr,
-            dataToday.dlfCurr,
-            dataYesterday.vblCurr,
-            dataToday.vblCurr,
-        )
-    else:
-        dataPrev = (
-            dataYesterday.mainCurr,
-            0,
-            dataYesterday.kchCurr,
-            0,
-            dataYesterday.ecCurr,
-            0,
-            dataYesterday.tankCurr,
-            0,
-            dataYesterday.dlfCurr,
-            0,
-            dataYesterday.vblCurr,
-            0,
-        )
-
+        if dataToday:
+            dataPrev = (
+                dataYesterday.mainCurr,
+                dataToday.mainCurr,
+                dataYesterday.kchCurr,
+                dataToday.kchCurr,
+                dataYesterday.ecCurr,
+                dataToday.ecCurr,
+                dataYesterday.vblCurr,
+                dataToday.vblCurr,
+                dataYesterday.tankCurr,
+                dataToday.tankCurr,
+                dataYesterday.dlfCurr,
+                dataToday.dlfCurr,
+            )
+        else:
+            dataPrev = (
+                dataYesterday.mainCurr,
+                0,
+                dataYesterday.kchCurr,
+                0,
+                dataYesterday.ecCurr,
+                0,
+                dataYesterday.vblCurr,
+                0,
+                dataYesterday.tankCurr,
+                0,
+                dataYesterday.dlfCurr,
+                0,
+            )
     return render_template("report_two.html", dataPrev=dataPrev)
 
 
@@ -247,9 +247,9 @@ def submit_two():
         mainCurr=mainPrev,
         kchCurr=kchPrev,
         ecCurr=ecPrev,
+        vblCurr=vblPrev,
         tankCurr=tankPrev,
         dlfCurr=dlfPrev,
-        vblCurr=vblPrev,
     )
     db.session.merge(reportTwoYesterday)
     db.session.commit()
@@ -259,9 +259,9 @@ def submit_two():
         mainCurr=mainCurr,
         kchCurr=kchCurr,
         ecCurr=ecCurr,
+        vblCurr=vblCurr,
         tankCurr=tankCurr,
         dlfCurr=dlfCurr,
-        vblCurr=vblCurr,
     )
     db.session.merge(reportTwoToday)
     db.session.commit()
