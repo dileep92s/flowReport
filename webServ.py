@@ -1,6 +1,6 @@
 import subprocess
 
-required_packages = ["Flask", "Flask-SQLAlchemy", "pandas", "openpyxl"]
+required_packages = ["Flask", "Flask-SQLAlchemy", "openpyxl"]
 missing_packages = [
     package
     for package in required_packages
@@ -12,10 +12,11 @@ if missing_packages:
 
 # ------------------------------------------------------------------------------- #
 
-from flask import Flask, render_template, request, send_file, jsonify
+from flask import Flask, render_template, request, make_response, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
-import pandas as pd
+from openpyxl import Workbook
+from io import BytesIO
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///flowreport.db"
@@ -53,11 +54,35 @@ def index():
 
 def export_excel(table, reportName):
     filename = dateToday().replace("/", "") + "_" + reportName + ".xlsx"
+    
+    # Create a new Excel workbook and select the active sheet
+    wb = Workbook()
+    ws = wb.active
+    
+    # Fetch data from the database
     engine = db.engine
     query = db.session.query(table)
-    df = pd.read_sql(query.statement, engine)
-    df.to_excel(filename, index=False)
-    return send_file(filename, as_attachment=True)
+    data = query.all()
+
+    # Write column headers
+    headers = [column.name for column in table.__table__.columns]
+    ws.append(headers)
+
+    # Write data to the worksheet
+    for row in data:
+        ws.append([getattr(row, header) for header in headers])
+
+    # Save the workbook to a BytesIO object
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    # Create a Flask response with the Excel file
+    response = make_response(output.read())
+    response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+    response.headers["Content-Type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+    return response
 
 
 @app.route("/export_kch")
@@ -72,7 +97,7 @@ def export_two():
 
 @app.route("/report_kch")
 def report_kch():
-    dataPrev = (0, 0, 0, 0, 0, 0, 0, 0)
+    dataPrev = ('', '', '', '', '', '', '', '')
     dataYesterday = ReportOne.query.filter_by(dateCurr=dateYesterday()).first()
     if dataYesterday:
         dataToday = ReportOne.query.filter_by(dateCurr=dateToday()).first()
@@ -90,11 +115,11 @@ def report_kch():
         else:
             dataPrev = (
                 dataYesterday.kchCurr,
-                0,
+                '',
                 dataYesterday.ecInCurr,
-                0,
+                '',
                 dataYesterday.ecOutCurr,
-                0,
+                '',
                 dataYesterday.tankCurr,
             )
     return render_template("report_kch.html", dataPrev=dataPrev)
@@ -156,7 +181,7 @@ def submit_kch():
 
 @app.route("/report_two")
 def report_two():
-    dataPrev = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    dataPrev = ('', '', '', '', '', '', '', '', '', '', '', '')
     dataYesterday = ReportTwo.query.filter_by(dateCurr=dateYesterday()).first()
     if dataYesterday:
         dataToday = ReportTwo.query.filter_by(dateCurr=dateToday()).first()
@@ -178,17 +203,17 @@ def report_two():
         else:
             dataPrev = (
                 dataYesterday.mainCurr,
-                0,
+                '',
                 dataYesterday.kchCurr,
-                0,
+                '',
                 dataYesterday.ecCurr,
-                0,
+                '',
                 dataYesterday.vblCurr,
-                0,
+                '',
                 dataYesterday.tankCurr,
-                0,
+                '',
                 dataYesterday.dlfCurr,
-                0,
+                '',
             )
     return render_template("report_two.html", dataPrev=dataPrev)
 
